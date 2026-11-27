@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {CLUB_TEAMS,ROLES,validateProfile,publicProfile,rankingDisplay} from '../participant-profile.js';
+const p={alias:'Penya United',firstName:'Marc',lastName:'Ejemplo',role:'Invitado',team:'Sin equipo asignado',showName:true,showTeam:true};
+assert.equal(CLUB_TEAMS.length,27);
+assert.equal(ROLES.length,7);
+assert.deepEqual(publicProfile(p),{alias:'Penya United',firstName:'Marc',team:'Invitado'});
+assert.deepEqual(publicProfile({...p,showName:false,showTeam:false}),{alias:'Penya United',firstName:'',team:''});
+assert.deepEqual(publicProfile({...p,showName:undefined,showTeam:undefined}),{alias:'Penya United',firstName:'',team:''});
+assert.equal(publicProfile({...p,role:'Entrenador',team:'Cadete S15'}).team,'Cadete S15');
+assert.throws(()=>validateProfile({...p,alias:' '}));
+assert.throws(()=>validateProfile({...p,alias:'x'.repeat(37)}));
+assert.throws(()=>validateProfile({...p,team:'Inventado'}));
+assert.throws(()=>validateProfile({...p,role:'Administrador'}));
+assert.equal(validateProfile({...p,alias:' Penya United '}).alias,'Penya United');
+const row={alias:'Anterior',total:87,played:2};
+assert.deepEqual(rankingDisplay(row,publicProfile(p)),{alias:'Penya United',firstName:'Marc',team:'Invitado',total:87,played:2});
+assert.deepEqual(rankingDisplay(row,null),{alias:'Anterior',firstName:'',team:'',total:87,played:2});
+console.log('13 comprobaciones superadas');
