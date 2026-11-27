@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {prepareBatch} from '../batch-import.js';
 import {reviewBatch} from '../batch-merge.js';
 import {roundProgress} from '../round-progress.js';
-import {scoreLineup} from '../scoring-policy.js';
+import {scoreLineup,scoreTeam} from '../scoring-policy.js';
 const load=name=>JSON.parse(readFileSync(new URL('../'+name,import.meta.url),'utf8'));
 const players=load('jugadores.json'),coaches=load('entrenadores.json');
 const teams=[...new Set(players.map(p=>p.team))];
@@ -31,3 +31,15 @@ assert.throws(()=>reviewBatch(first.next,prepareBatch([conflicting],players,coac
 const invalid={...matches[0],forGoals:2,events:[]};
 assert.equal(prepareBatch([invalid],players,coaches).canPublish,false);
 assert.equal(prepareBatch([matches[0],matches[0]],players,coaches).canPublish,false);
+
+const samplePlayers=[{id:'g',team:'A',pos:'POR'},{id:'d',team:'A',pos:'DEF'},{id:'m',team:'A',pos:'MED'},{id:'f',team:'A',pos:'DEL'},{id:'other',team:'B',pos:'DEL'}];
+const sampleCoaches=[{id:'c',team:'A'}];
+const win=scoreTeam(samplePlayers,sampleCoaches,'A',{result:'win',cleanSheet:true,goals:{f:4},reds:{d:1}});
+assert.deepEqual(win,{g:6,d:1,m:3,f:12,c:5});
+assert.equal(scoreLineup({slots:['g','d','m','f'],coachId:'c',captainId:'f'},win),39);
+const loss=scoreTeam(samplePlayers,sampleCoaches,'A',{result:'loss',cleanSheet:false,goals:{m:1},reds:{f:1}});
+assert.deepEqual(loss,{g:0,d:0,m:3,f:-5,c:0});
+assert.equal(scoreLineup({slots:['g','d','m','f'],coachId:'c',captainId:'f'},loss),-7);
+assert.deepEqual(scoreTeam(samplePlayers,sampleCoaches,'A',{result:'draw',cleanSheet:true}),{g:4,d:4,m:1,f:1,c:2});
+assert.equal(scoreLineup({slots:['g'],coachId:'c',captainId:'g'},{g:0}),0);
+assert.throws(()=>scoreTeam(samplePlayers,sampleCoaches,'A',{result:'invalid'}));
