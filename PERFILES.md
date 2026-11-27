@@ -6,7 +6,8 @@ No desplegado. No modificar cuentas, jornadas ni alineaciones existentes.
 - Nombre de equipo Fantasy: conservar alias existente y permitir edición independiente de la jornada.
 - Nombre de pila, apellidos, vinculación y equipo: perfil privado, editable por su titular y consultable por administrador autorizado.
 - Proyección para ranking: alias, nombre de pila y equipo únicamente si el titular elige mostrarlos; por defecto ocultar identidad y categoría hasta consentimiento. No publicar correo, apellidos ni vinculación.
-- Vinculación: jugador, entrenador, familiar, directiva, socio, aficionado.
+- Vinculación: jugador, entrenador, familiar, directiva, socio, aficionado, invitado.
+- Invitado: cuenta autenticada con las mismas reglas de competición; puede seleccionar Sin equipo asignado. No implica acceso anónimo ni permisos administrativos.
 - Equipo declarado por participante, no verificado por el club. Familiares pueden elegir el equipo de referencia.
 
 ## Equipos disponibles (catálogo actual)
