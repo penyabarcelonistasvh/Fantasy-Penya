@@ -1,0 +1,29 @@
+// Proposed fragment for insertion inside match /databases/{database}/documents.
+// Not deployed. Uses existing signed() and admin() helpers.
+function profileText(s,n){return s is string && s.size()>0 && s.size()<=n;}
+function validParticipantProfile(p){
+ return p.keys().hasAll(['alias','firstName','lastName','role','team','showName','showTeam'])
+ && p.keys().hasOnly(['alias','firstName','lastName','role','team','showName','showTeam'])
+ && profileText(p.alias,36) && profileText(p.firstName,40) && profileText(p.lastName,80)
+ && p.role in ['Jugador','Entrenador','Familiar','Directiva','Socio','Aficionado','Invitado']
+ && p.team in ["Alevín S11 A","Alevín S11 B","Alevín S12 A","Alevín S12 B","Alevín S12 C","Amateur A","Amateur B","Amateur Fem A","Amateur Fem B","Benjamín S10 A","Benjamín S9 A","Cadete S15","Genuino Blau","Genuino Grana","Genuino Groc","Genuino Taronja","Infantil Fem A","Infantil S13","Infantil S14","Juvenil A","Juvenil B","Juvenil C","Juvenil Fem A","Prebenjamín S7 A","Veteranas","Directiva","Sin equipo asignado"]
+ && p.showName is bool && p.showTeam is bool;
+}
+function projectedProfile(p){
+ return {'alias':p.alias,'firstName':p.showName?p.firstName:'',
+ 'team':p.showTeam?(p.role=='Invitado' && p.team=='Sin equipo asignado'?'Invitado':p.team):''};
+}
+match /private_profiles/{uid}{
+ allow read: if signed() && (request.auth.uid==uid || admin());
+ allow create,update: if signed() && request.auth.uid==uid
+ && validParticipantProfile(request.resource.data)
+ && getAfter(/databases/$(database)/documents/public_profiles/$(uid)).data == projectedProfile(request.resource.data);
+ allow delete: if false;
+}
+match /public_profiles/{uid}{
+ allow read: if signed();
+ allow create,update: if signed() && request.auth.uid==uid
+ && validParticipantProfile(getAfter(/databases/$(database)/documents/private_profiles/$(uid)).data)
+ && request.resource.data == projectedProfile(getAfter(/databases/$(database)/documents/private_profiles/$(uid)).data);
+ allow delete: if false;
+}
